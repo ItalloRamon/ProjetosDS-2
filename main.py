@@ -13,6 +13,7 @@ def clear():
     elif platform == 'win32':
         system('cls')
 
+
 def menu():
     clear()
     print("#-#-#-#- MENU -#-#-#-#")
@@ -22,11 +23,13 @@ def menu():
     (3) - Reajuste
     (99) - Encerrar o programa''')
 
+
 def menu_ajuste():
     print('''Seleciona a opção que você deseja:
         (1) - Inserir uma disciplia.
         (2) - Remover uma disciplina.
         (3) - Trocar uma disciplina.''')
+
 
 def choice_subject(student):
     full_calendar()
@@ -37,20 +40,25 @@ def choice_subject(student):
         return -1
     elif code_subj != 'Q':
         subj = subject_from_code(code_subj)
-        sucess = student.enroll(subj)
-        if sucess == 0:
-            print("Você já pagou essa disciplina :(")
-        elif sucess == -1:
-            print("Você não tem os pré-requisitos para pagar essa disciplina.")
-        elif sucess == 1:
-            print("Esta disciplina está dando choque de horário com alguma outra.")
+        # Check sujbect
+        if isinstance(subj, str):
+            print(f'Não tem disciplina com codigo {subj}.')
         else:
-            print(f"Matrícula realizada com sucesso na disciplina {subj}.")
+            sucess = student.enroll(subj)
+            if sucess == 0:
+                print("Você já pagou essa disciplina :(")
+            elif sucess == -1:
+                print("Você não tem os pré-requisitos para pagar essa disciplina.")
+            elif sucess == 1:
+                print("Esta disciplina está dando choque de horário com alguma outra.")
+            else:
+                print(f"Matrícula realizada com sucesso na disciplina {subj}.")
+
 
             
 should_continue = True
 #Lembrar que colocar False de volta
-matricula_is_finished = True
+matricula_is_finished = False
 ajuste_is_finished = False
 count_formandos = 0
 count_continuos = 0
@@ -93,7 +101,7 @@ while should_continue:
                         subject_chosen = choice_subject(student)
                         if subject_chosen == -1:
                             break
-                        sleep(3)
+                        sleep(3)        # ?
                         clear()
                     count_formandos += 1
                               
@@ -138,7 +146,7 @@ while should_continue:
                     want_stop_matricula = input("Deseja encerrar o período da matrícula? [S/N] ").upper()
                     if want_stop_matricula == 'S':
                         matricula_is_finished = True
-                        write_students_to_database(students_enrolled)
+                       # write_students_to_database(students_enrolled)
                         print("Período de matrícula encerrado!")
                         sleep(3) 
             else:

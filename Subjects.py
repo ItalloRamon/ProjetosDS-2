@@ -67,21 +67,28 @@ def read_subjects():
 
 
 # Return Subject object from code
-# Code could be "CC1901" for single subject 
-# or "CC1901-1910" for a list of subjects
+# Code should be "CC1901" for single subject 
 def subject_from_code(code):
     global subjects
     first = 1901
     last = 1940
     if len(code) == 6:
-        c = int(code[2:])
-        return subjects[c - first]
+        try:
+            c = int(code[2:])
+            # Avoid index error
+            if c >= first and c <= last:
+                return subjects[c - first]
+        except ValueError:
+            # Return the code if the user messes up
+            return code
+    return code
 
-    else:
-        c = [int(i) for i in code[2:].split('-')]
-        start = c[0] - first
-        stop = c[1] - first + 1
-        return subjects[start: stop] 
+# This part of the function is not being used  i'll keep it there eventually i'll delete it
+#    elif len(code) > 6:
+#        c = [int(i) for i in code[2:].split('-')]
+#        start = c[0] - first
+#        stop = c[1] - first + 1
+#        return subjects[start: stop] 
 
 
 def code_from_subject(name):

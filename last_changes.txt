@@ -1,6 +1,8 @@
  - Resolvido o problema do numero das matriculas
- - na funcçao Student.UNenroll coloquei que checka se a materia esta na lista enrolled_classes  ( nao removi Student.check_UNenrolled )
-
+ - "Student.canTakeTheSubject" agora tem cheque para ver se tem conflito de horario, falta de
+   pre-requisitos ou a materia ja foi paga.
+ - Coloquei resoluçao de erro na funçao "subject_from_code" e chequei em "choice_subject" que
+   o codigo da materia està corretto  
 
 
 Logic:

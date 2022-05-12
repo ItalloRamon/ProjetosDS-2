@@ -24,44 +24,34 @@ class Student:
     def enroll(self, subject):
         '''
         Expects subject to be of type Subject
-        This method doesn't change the subject attributes\n
-        Return 1 -> Conflict of time\n
-        Return 0 -> Student already approved in this subject\n
+        This method doesn't change the subject attributes
+        Return 1 -> Conflict of time
+        Return 0 -> Student already approved in this subject
         Return -1 -> Missing pre-requisites 
         '''
         # Check that the students ha prerequisites
         sucess = self.canTakeTheSubject(subject) 
-        if sucess == 1:
-            # check that the time of the classes aren't overlapping
-            if not check_conficts(self.enrolled_classes + [subject]):
-                self.enrolled_classes.append(subject)
-            else:
-                return 1
+        if sucess == 'Ok':
+            self.enrolled_classes.append(subject)
         else:
-            return success # 0 -> already approved -1 -> missing pre-requisites 
+            return sucess # 1 -> Schedule conflict 0 -> already approved -1 -> missing pre-requisites 
     
     #Se der tempo, ajeitar essa gambiarra 
     def check_enroll(self, subject):
         '''
         Expects subject to be of type Subject
-        This method doesn't change the subject attributes\n
-        Return 1 -> Conflict of time\n
-        Return 0 -> Student already approved in this subject\n
+        This method doesn't change the subject attributes
+        Return 1 -> Conflict of time
+        Return 0 -> Student already approved in this subject
         Return -1 -> Missing pre-requisites 
         Return 200 -> Can enroll
         '''
         # Check that the students ha prerequisites
         sucess = self.canTakeTheSubject(subject) 
-        if sucess == 1:
-            # check that the time of the classes aren't overlapping
-            if not check_conficts(self.enrolled_classes + [subject]):
-                return 200
-            else:
-                return 1
-        elif sucess == 0:
-            return 0 # already approved
-        elif sucess == -1:
-            return -1 # missing pre-requisites 
+        if sucess == 'Ok':
+            return 200
+        
+        return sucess # 1 -> Schedule conflict 0 -> already approved -1 -> missing pre-requisites 
     
 
     def UNenroll(self, subject):
@@ -82,9 +72,8 @@ class Student:
         Expects subject to be of type Subject
         This method doesn't change the subject attributes
         '''
-        for subj in self.enrolled_classes:
-            if subj == subject:
-                return 200
+        if subject in self.enrolled_classes:
+            return 200
         return -1 
 
 
@@ -111,20 +100,24 @@ class Student:
 
     # Check if this students has the pre requisites for taking a given subject 
     def canTakeTheSubject(self, subject):
-        '''Return 0 -> Student already took the subject\n
-           Return -1 -> Missing pre requisites\n
-           Return 1 -> Everything OK! 
+        '''Return 0 -> Student already took the subject
+           Return -1 -> Missing pre requisites
+           Return 1 -> Schedule conflict
         '''
+        # check that the time of the classes aren't overlapping
         history = [i[0] for i in self.approved_classes]
-
-        if subject.code in history:
-            return 0    # Student already took the subject
-
         if subject.pre_requisite:
             for pre in subject.pre_requisite:
                 if not pre in history:
                     return -1    # Missing prerequisites
-        return 1    # ok
+
+        elif subject.code in history:
+            return 0    # Student already took the subject
+        
+        elif check_conficts(self.enrolled_classes + [subject]):
+            return 1 # Schedule conflict
+
+        return 'Ok'    # ok
 
 
     def studentOverview(self):
