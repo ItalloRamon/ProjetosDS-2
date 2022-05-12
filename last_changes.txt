@@ -1,9 +1,5 @@
-Encontrei un bug na leitura do Database dos estudantes, agora esta funcionando direito.
-
-Addicionei funçoes para matricular o aluno em uma materia e para remover uma materia da matricula do aluno.
-
-
-no file "test.py" mostra como manipular a matricula do aluno
+ - Resolvido o problema do numero das matriculas
+ - na funcçao Student.UNenroll coloquei que checka se a materia esta na lista enrolled_classes  ( nao removi Student.check_UNenrolled )
 
 
 
@@ -24,7 +20,7 @@ Logic:
 		3rd	Just change
 		4th	just remove
 		5th	just insert
-	
+
 	
 	Reajuste:
 		priority to highest coefficients

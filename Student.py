@@ -37,10 +37,8 @@ class Student:
                 self.enrolled_classes.append(subject)
             else:
                 return 1
-        elif sucess == 0:
-            return 0 # already approved
-        elif sucess == -1:
-            return -1 # missing pre-requisites 
+        else:
+            return success # 0 -> already approved -1 -> missing pre-requisites 
     
     #Se der tempo, ajeitar essa gambiarra 
     def check_enroll(self, subject):
@@ -65,12 +63,18 @@ class Student:
         elif sucess == -1:
             return -1 # missing pre-requisites 
     
+
     def UNenroll(self, subject):
         '''
         Expects subject to be of type Subject
         This method doesn't change the subject attributes
         '''
-        self.enrolled_classes.remove(subject) 
+        # Check that the subject is in the list of enrolled_classes
+        if subject in self.enrolled_classes:
+            self.enrolled_classes.remove(subject) 
+        else:
+            return -1 # Student is not enrolled in this subject
+
     
     ##GAMBIARRA
     def check_UNenroll(self, subject):
@@ -183,8 +187,7 @@ def make_new_students():
     with open('students0.1.txt', 'r') as f:
         try:
             line = f.readlines()[-1]
-            registration_n = int(line.split('; ')[1])
-            # print(registration_n)  
+            registration_n = int(line.split('; ')[1]) + 1
         except IndexError:
             registration_n = 1111
 
@@ -202,7 +205,6 @@ def make_new_students():
 def write_students_to_database(students):
     with open('students0.1.txt', 'w') as f:
         for student in students:
-            #print(student)
             f.write(student.formatStudentForDatabase())
             f.write('\n')
 
