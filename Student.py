@@ -17,7 +17,8 @@ class Student:
         self.coefficent = sum([float(i[1]) for i in self.approved_classes]) / len(self.approved_classes) if len(self.approved_classes) else None
 
     def __str__(self):
-        return 'Name: %s\nSemester: %s\nCoeff: %s'%(self.name, self.semester, round(self.coefficent, 1))
+        # return 'Name: %s\nSemester: %s\nCoeff: %s'%(self.name, self.semester, round(self.coefficent, 1))
+        return 'Name: %s\nSemester: %s\n'%(self.name, self.semester)
         
 
     def enroll(self, subject):
@@ -40,7 +41,29 @@ class Student:
             return 0 # already approved
         elif sucess == -1:
             return -1 # missing pre-requisites 
-
+    
+    #Se der tempo, ajeitar essa gambiarra 
+    def check_enroll(self, subject):
+        '''
+        Expects subject to be of type Subject
+        This method doesn't change the subject attributes\n
+        Return 1 -> Conflict of time\n
+        Return 0 -> Student already approved in this subject\n
+        Return -1 -> Missing pre-requisites 
+        Return 200 -> Can enroll
+        '''
+        # Check that the students ha prerequisites
+        sucess = self.canTakeTheSubject(subject) 
+        if sucess == 1:
+            # check that the time of the classes aren't overlapping
+            if not check_conficts(self.enrolled_classes + [subject]):
+                return 200
+            else:
+                return 1
+        elif sucess == 0:
+            return 0 # already approved
+        elif sucess == -1:
+            return -1 # missing pre-requisites 
     
     def UNenroll(self, subject):
         '''
@@ -48,6 +71,17 @@ class Student:
         This method doesn't change the subject attributes
         '''
         self.enrolled_classes.remove(subject) 
+    
+    ##GAMBIARRA
+    def check_UNenroll(self, subject):
+        '''
+        Expects subject to be of type Subject
+        This method doesn't change the subject attributes
+        '''
+        for subj in self.enrolled_classes:
+            if subj == subject:
+                return 200
+        return -1 
 
 
     # Returns calendar for enrolled classes
@@ -168,6 +202,7 @@ def make_new_students():
 def write_students_to_database(students):
     with open('students0.1.txt', 'w') as f:
         for student in students:
+            #print(student)
             f.write(student.formatStudentForDatabase())
             f.write('\n')
 
@@ -177,3 +212,4 @@ def student_from_registration(registration, students):
     for student in students:
         if registration == student.registration:
             return student
+    return -1

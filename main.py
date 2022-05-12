@@ -22,6 +22,12 @@ def menu():
     (3) - Reajuste
     (99) - Encerrar o programa''')
 
+def menu_ajuste():
+    print('''Seleciona a opção que você deseja:
+        (1) - Inserir uma disciplia.
+        (2) - Remover uma disciplina.
+        (3) - Trocar uma disciplina.''')
+
 def choice_subject(student):
     full_calendar()
     print("\nEscolha no mínimo 4 disciplinas, e no máximo 8:")
@@ -41,33 +47,42 @@ def choice_subject(student):
         else:
             print(f"Matrícula realizada com sucesso na disciplina {subj}.")
 
+            
 should_continue = True
-matricula_is_finished = False
+#Lembrar que colocar False de volta
+matricula_is_finished = True
 ajuste_is_finished = False
 count_formandos = 0
 count_continuos = 0
 count_individual = 0
+
+#Calouros
+students = read_students()
+students_enrolled = []
+new_students = make_new_students()
+for stud in new_students:
+    stud.enrolled_classes = subjects[:5]
+    students_enrolled.append(stud)
+
+for s in students_enrolled:
+    print(s)
+
+
+list_inserts = []
+list_removes = []
+list_changes = []
 
 while should_continue:
     menu()
     choice = input("Digite a opção escolhida: ")
     clear()
 
-    #Matrícula
     #TODO SALVAR NA BASE DE DADOS
     #TODO VERIFICAR TODAS AS ENTRADAS
     if choice == '1':
         while not matricula_is_finished:
             print("Perído da matrícula em andamento...\n\n\n")
             
-            students = read_students()
-
-            #Calouros
-            new_students = make_new_students()
-            for stud in new_students:
-                stud.enrolled_classes = subjects[:5]
-            students.extend(new_students)
-
             matricula = input("Digite o número da sua matrícula: ")
             student = student_from_registration(int(matricula), students) 
             
@@ -80,8 +95,9 @@ while should_continue:
                             break
                         sleep(3)
                         clear()
-                    count_formandos += 1           
-                #Padrão
+                    count_formandos += 1
+                              
+                #Padrao
                 elif student.type == 'Continuo':
                     if count_formandos == MAX_FORMANDOS:
                         student.enrolled_classes = get_subjects_from_semester(student.semester)
@@ -111,11 +127,18 @@ while should_continue:
                         print("Ainda não está na sua hora.")
                         sleep(3)
 
+                students_enrolled.append(student)
+                for s in students_enrolled:
+                    print(s)
+                # for stud in students:
+                #     print(str(stud))
+                 
                 #Matricula is finished
                 if count_formandos == MAX_FORMANDOS and count_individual == MAX_INDIVIDUAL and count_continuos == MAX_CONTINUOS:
                     want_stop_matricula = input("Deseja encerrar o período da matrícula? [S/N] ").upper()
                     if want_stop_matricula == 'S':
                         matricula_is_finished = True
+                        write_students_to_database(students_enrolled)
                         print("Período de matrícula encerrado!")
                         sleep(3) 
             else:
@@ -124,7 +147,144 @@ while should_continue:
     #TODO AJUSTE
     elif choice == '2':
         if matricula_is_finished:
-            print("Período de ajuste iniciado!")
+            print("Período de ajuste em andamento...\n\n\n")
+            
+            students = read_students()
+            matricula = input("Digite o número da sua matrícula: ")
+            student = student_from_registration(int(matricula), students)
+            
+            if student == -1:
+                print("Você não está matriculado!")
+                break
+
+            menu_ajuste()
+            choice = input("Digite e opção desejada: ")
+
+            if choice == '1': #Insert
+                full_calendar()
+                code_subj = input("Digite o código da disciplina que você quer inserir: ")
+                subj = subject_from_code(code_subj)
+                sucess = student.check_enroll(subj)
+
+                if sucess == 200:
+                    ins = {
+                        "student": (student, subj)
+                    }
+                    print("Seu pedido foi registrado!")
+                    sleep(3)
+
+                    for s in list_changes:
+                        if s["student"][1][0].code == ins["student"][1].code:                    
+                            #Make the enrollment
+                            student_change = s["student"][0]
+                            student_change.UNenroll(s["student"][1][0])
+                            student_change.enroll(s["student"][1][1])
+
+                            student_insert = ins["student"][0]
+                            student_insert.enroll(ins["student"][1])
+
+                            print("Prioridade especial")
+                            sleep(3)
+                        else:
+                            list_inserts.append(ins)
+                            print("Prioridade normal")
+                            sleep(3)
+                else:
+                    print("Não pode inserir essa disciplina!")
+                    sleep(3)
+
+            elif choice == '2': #Remove
+                full_calendar()
+                code_subj = input("Digite o código da disciplina que você quer remover: ")
+                subj = subject_from_code(code_subj)
+                sucess = student.check_UNenroll(subj)
+
+                if sucess == 200:
+                    rem = {
+                        "student": (student, subj)
+                    }
+                    print("Seu pedido foi registrado!")
+                    sleep(3)
+
+                    for s in list_changes:
+                        if s["student"][1][1].code == rem["student"][1].code:                    
+                            #Make the enrollment
+                            student_remove = rem["student"][0]
+                            student_remove.UNenroll(rem["student"][1])
+
+                            student_change = s["student"][0]
+                            student_change.UNenroll(s["student"][1][0])
+                            student_change.enroll(s["student"][1][1])
+
+                            print("Prioridade especial")
+                            sleep(3)
+                        else:
+                            list_removes.append(rem)
+                            print("Prioridade normal")
+                else:
+                    print("Você não está matriculado nessa matéria")
+
+            elif choice == '3': #Change
+                full_calendar()
+                code_subj_remove = input("Digite o código da disciplina que você quer remover: ")
+                code_subj_insert = input("Digite o código da disciplina que você quer inserir: ")
+                #Levando em consideração, que o usuário vai digitar algo válido
+                subj_remove = subject_from_code(code_subj_remove) #Check UNenroll
+                sucess = student.check_UNenroll(subj_remove)
+                if sucess != 200:
+                    print("Você não pode remover essa matéria!")
+                    break
+
+                subj_insert = subject_from_code(code_subj_insert) #Check enroll
+                sucess = student.check_enroll(subj_insert)
+                if sucess != 200:
+                    print("Você não pode inserir essa matéria!")
+                    break
+                
+                cha = {
+                    "student": (student, (subj_remove, subj_insert))
+                }
+                
+                #Check inserts
+                for s in list_inserts:
+                    if s["student"][1].code == cha["student"][1][0].code:
+                        #Make the enrollment
+                        student_change = cha["student"][0]
+                        student_change.UNenroll(cha["student"][1][0])
+                        student_change.enroll(cha["student"][1][1])
+
+                        student_insert = s["student"][0]
+                        student_insert.enroll(s["student"][1])
+
+                        print("Prioridade especial")
+                        sleep(3)
+                    else:
+                        list_changes.append(cha)
+                        print("Prioridade normal")
+                        sleep(3)
+                        
+                #Check removes
+                for s in list_removes:
+                    if s["student"][1].code == cha["student"][1][1].code:
+                        #Make the enrollment
+                        student_remove = s["student"][0]
+                        student_remove.UNenroll(s["student"][1])
+                        
+                        student_change = cha["student"][0]
+                        student_change.UNenroll(cha["student"][1][0])
+                        student_change.enroll(cha["student"][1][1])
+
+                        print("Prioridade especial")
+                        sleep(3)
+                    else:
+                        list_changes.append(cha)
+                        print("Prioridade normal")
+                        sleep(3)
+                list_changes.append(cha)
+                print("Seu pedido foi registrado!")
+                sleep(3)
+                
+
         else:
             print("Ainda não começou o período de ajuste.")
             sleep(3)
@@ -132,7 +292,7 @@ while should_continue:
     #TODO REAJUSTE
     elif choice == '3':
         if matricula_is_finished and ajuste_is_finished:
-            print("Período de reajuste iniciado!")
+            print("Período de reajuste em andamento...\n\n\n")
         else:
             print("Período de reajuste ainda não começou.")
             sleep(3)

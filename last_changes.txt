@@ -24,7 +24,8 @@ Logic:
 		3rd	Just change
 		4th	just remove
 		5th	just insert
-
+	
+	
 	Reajuste:
 		priority to highest coefficients
 
