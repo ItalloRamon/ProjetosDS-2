@@ -1,6 +1,6 @@
 DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex']
 HOURS = ['7:30', '8:20', '9:20', '10:10', '11:10', '12:00', '13:30', '14:20', '15:20', '16:10', '17:00']
-
+MAX_CAPACITY = 40
 
 class Subject:
     def __init__(self, name, semester, code, hours, schedule, pre_requisite=None):
@@ -9,8 +9,8 @@ class Subject:
         self.code = code
         self.hours = hours
         self.pre_requisite = pre_requisite
-        self.class_capacity = 40
-        self.enrolled_sudents = 0 # Could be a list of Student
+        self.class_capacity = MAX_CAPACITY
+        self.enrolled_students = 0 # Could be a list of Student
         self.schedule = schedule
 
 

@@ -33,6 +33,7 @@ class Student:
         sucess = self.canTakeTheSubject(subject) 
         if sucess == 'Ok':
             self.enrolled_classes.append(subject)
+            subject.addStudent()
         else:
             return sucess # 1 -> Schedule conflict 0 -> already approved -1 -> missing pre-requisites 
     
