@@ -207,4 +207,4 @@ def student_from_registration(registration, students):
     for student in students:
         if registration == student.registration:
             return student
-    return -1
+    return 0
