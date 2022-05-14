@@ -21,7 +21,7 @@ class Subject:
         return '\n'.join(DAYS[int(i[0])] + ' ' + HOURS[int(i[1:])] for i in self.schedule)
 
     def addStudent(self):
-        self.enrolled_sudents+=1
+        self.enrolled_students+=1
     
     # Checks conflicts in the schedule of this Subject with another Subject object
     # outputs:  1 -> there is conflict in the schedule of the two subjects (overlapping)
