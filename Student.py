@@ -31,14 +31,16 @@ class Student:
         '''
         # Check that the students ha prerequisites
         sucess = self.canTakeTheSubject(subject) 
-        if sucess == 'Ok':
+        if sucess == 200:
             self.enrolled_classes.append(subject)
             subject.addStudent()
         else:
             return sucess # 1 -> Schedule conflict 0 -> already approved -1 -> missing pre-requisites 
-    
+   
     #Se der tempo, ajeitar essa gambiarra 
     def check_enroll(self, subject):
+        # ! REMOVABLE ! #
+        # !           ! #
         '''
         Expects subject to be of type Subject
         This method doesn't change the subject attributes
@@ -54,6 +56,16 @@ class Student:
         
         return sucess # 1 -> Schedule conflict 0 -> already approved -1 -> missing pre-requisites 
     
+    
+    def checkChange(self, to_insert, to_remove):
+        if self.check_UNenroll(to_remove) == 200:
+            # Check without class to be removed
+            self.enrolled_classes.remove(to_remove)
+            success = self.canTakeTheSubject(to_insert)
+            # Reset enrolled_classes list
+            self.enrolled_classes.append(to_remove)
+            return success
+
 
     def UNenroll(self, subject):
         '''
@@ -105,20 +117,21 @@ class Student:
            Return -1 -> Missing pre requisites
            Return 1 -> Schedule conflict
         '''
-        # check that the time of the classes aren't overlapping
-        history = [i[0] for i in self.approved_classes]
-        if subject.pre_requisite:
-            for pre in subject.pre_requisite:
-                if not pre in history:
-                    return -1    # Missing prerequisites
 
-        elif subject.code in history:
+        history = [i[0] for i in self.approved_classes] 
+        if subject.code in history:
             return 0    # Student already took the subject
         
+        # check that the time of the classes aren't overlapping
         elif check_conficts(self.enrolled_classes + [subject]):
             return 1 # Schedule conflict
 
-        return 'Ok'    # ok
+        elif subject.pre_requisite:
+            for pre in subject.pre_requisite:
+                if not pre in history:
+                    return -1    # Missing prerequisite
+        
+        return 200    # ok
 
 
     def studentOverview(self):

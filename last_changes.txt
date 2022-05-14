@@ -1,8 +1,7 @@
- - Resolvido o problema do numero das matriculas
- - "Student.canTakeTheSubject" agora tem cheque para ver se tem conflito de horario, falta de
-   pre-requisitos ou a materia ja foi paga.
- - Coloquei resoluçao de erro na funçao "subject_from_code" e chequei em "choice_subject" que
-   o codigo da materia està corretto  
+- Dei uma ajeitada no main.py, resolvi mudar poucas coisas no reajuste para diminuir a dimensao do codigo
+  Addicionei uma funçao no estudante "Student.checkChange" que vai verificar se o aluno pode realizar
+  a troca das materias.
+  O codigo ainda precisa ser testado mais vezes, o main antigo està ainda salvo como "main.py-bkp"  
 
 
 Logic:
