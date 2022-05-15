@@ -385,6 +385,7 @@ def resolve_readjustments():
         list_requests = sorted(list_requests, key=lambda x:x[1][0].coefficent, reverse=True)
         for req in list_requests:
             request = req[1]
+            print(request[0].coefficent)
             # Insert
             if req[0] == 1:
                 if request[0].canTakeTheSubject(request[1]):

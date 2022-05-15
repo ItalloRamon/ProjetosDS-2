@@ -176,11 +176,16 @@ def read_students():
             approved = [tuple(i.split(',')) for i in approved.split('&')]
 
         if enrolled == '':
-            enrolled = []
+            enrolled_sub = []
         else:
-            enrolled = [subject_from_code(i) for i in enrolled.split('&')]
-
-        students.append(Student(name, int(registration), int(semester), _type, approved, enrolled))
+            enrolled_sub = []
+            for sub in enrolled.split('&'):
+                if sub.startswith('CC'):
+                    enrolled_sub.append(subject_from_code(sub))
+                else:
+                    enrolled_sub.append(extrasubject_from_code(sub))
+        
+        students.append(Student(name, int(registration), int(semester), _type, approved, enrolled_sub))
 
     return students
 
