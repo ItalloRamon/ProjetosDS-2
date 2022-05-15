@@ -366,6 +366,85 @@ while should_continue:
     elif choice == '3':
         if matricula_is_finished and ajuste_is_finished:
             print("Período de reajuste em andamento...\n\n\n")
+
+            students = read_students()
+            matricula = input("Digite o número da sua matrícula: ")
+
+            # Prevent ValueError converting str to int
+            if matricula.isdigit():
+                student = student_from_registration(int(matricula), students) 
+            else:
+                student = 0
+            
+            if not student:
+                print("Você não está matriculado!")
+                break
+
+            full_calendar()
+            code_subj = input("Digite o código da disciplina que você quer inserir: ")
+            subj = subject_from_code(code_subj)
+            sucess = student.check_enroll(subj)
+            
+            if sucess == 200:
+                
+                ins = {
+                    "student": (student,subj)
+                }
+                print("Seu pedido foi registrado!")
+                list_readjust.append(ins)
+                sleep(3)
+            else:
+                print("Erro: Falha ao realizar o pedido dessa disciplina.")
+                sleep(3)
+            
+            want_finish_readjustment = input("Você desejar encerrar o período de reajuste? [S/N] ").upper()
+            if want_finish_readjustment == 'S':
+                #Realizar as matrículas dos normais
+                #Changes, removes and inserts
+                
+                for i in range(0, len(list_readjust)-1):
+                    for j in range(0, len(list_readjust)-1):
+                        if list_readjust[j]["student"][0].coefficent < list_readjust[j+1]["student"][0].coefficent:
+                            temp = list_readjust[j]
+                            list_readjust[j] = list_readjust[j+1]
+                            list_readjust[j+1] = list_readjust[j] 
+
+            
+            
+                for s in list_readjust:
+                    if s["student"][1].enrolled_students < s["student"][1].class_capacity:
+                        s["student"][0].enroll(s["student"][1])
+                        coef = s["student"][0].coefficent
+                        print(f"Coeficiente: {coef}")
+                        #print (s["student"][0].coefficent
+                        name_print = s["student"][0]
+                        print(f"{name_print} conseguiu sua matéria.")
+                        sleep(10)
+                    else:
+                        print(f"{name_print} , não foi possivel realizar a matrícula, a disciplina escolhida não tinha mais vagas.")
+                        sleep(10)
+
+
+
+                        
+
+
+        else:
+            print("Período de reajuste ainda não começou.")
+            sleep(3)
+
+    elif choice == '0':
+        should_continue = False
+
+
+
+
+
+'''
+    #TODO REAJUSTE
+     elif choice == '3':
+        if matricula_is_finished and ajuste_is_finished:
+            print("Período de reajuste em andamento...\n\n\n")
             
             student = ask_registration(students)
             if student:
@@ -382,4 +461,4 @@ while should_continue:
             sleep(3)
 
     elif choice == '0':
-        should_continue = False
+        should_continue = False'''
