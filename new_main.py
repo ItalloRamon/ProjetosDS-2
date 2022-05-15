@@ -152,16 +152,15 @@ def matriculation(student):
     elif student.type == 'Individual' and COUNT_FORMANDOS == MAX_FORMANDOS and COUNT_CONTINUOS == MAX_CONTINUOS:
         choose_subjects(student)
         COUNT_INDIVIDUAL += 1
-
-    # Close Marticula period
-    elif COUNT_FORMANDOS == MAX_FORMANDOS and COUNT_CONTINUOS == MAX_CONTINUOS and COUNT_INDIVIDUAL == MAX_INDIVIDUAL:
-        MATRICULA_IS_FINISHED = True
-
     else:
         print("Ainda não está na sua hora.")
         sleep(3)
 
+    # Close Marticula period
+    if COUNT_FORMANDOS == MAX_FORMANDOS and COUNT_CONTINUOS == MAX_CONTINUOS and COUNT_INDIVIDUAL == MAX_INDIVIDUAL:
+        MATRICULA_IS_FINISHED = True
 
+    
 
 # |-------------------------------------------------------| #
 # |     Phase 2 Adjustments (insert, remove, change)      | #
@@ -171,21 +170,28 @@ def adjustments(student, remove=False):
     global LIST_REMOVES
     global LIST_INSERTS
     global AJUSTE_IS_FINISHED
+    global remainingSubjects
     
     # Print calendario normal
     if not AJUSTE_IS_FINISHED:
         full_calendar()
     else:
         # Print calendario das materias a mais
-        pass
+        full_calendar()
+        print(calendar(remainingSubjects))
 
     if remove:
-        code_subj = input("Digite o código da disciplina que você quer remove: ")
+        code_subj = input("Digite o código da disciplina que você quer remove: ").upper()
     
     else:
-        code_subj = input("Digite o código da disciplina que você quer inserir: ")
+        code_subj = input("Digite o código da disciplina que você quer inserir: ").upper()
 
-    subj = subject_from_code(code_subj)
+    # Get subjects from other courses
+    if AJUSTE_IS_FINISHED and not code_subj.startswith('CC'):
+        subj = extrasubject_from_code(code_subj)
+    else:
+        subj = subject_from_code(code_subj)
+
     # Resolve bad input
     if isinstance(subj, str):
         print(f'Não tem disciplina com codigo {subj}.')
@@ -208,19 +214,41 @@ def adjustments(student, remove=False):
             LIST_INSERTS.append((student, subj))
 
     else:
-        print("Não pode inserir esta disciplina!")
+        if remove:
+            print("Não pode remover esta disciplina!")
+        else:
+            print("Não pode inserir esta disciplina!")
         sleep(2)
 
 
 # Used to request a subject replacement
 def adjustments_replace(student):
     global LIST_CHANGES
-    full_calendar()
-    code_subj_insert = input("Digite o código da disciplina que você quer inserir: ")
-    code_subj_remove = input("Digite o código da disciplina que você quer remover: ")
+    global AJUSTE_IS_FINISHED
 
-    subj_remove = subject_from_code(code_subj_remove)
-    subj_insert = subject_from_code(code_subj_insert)
+    # Print calendario normal
+    if not AJUSTE_IS_FINISHED:
+        full_calendar()
+    else:
+        # Print calendario das materias a mais
+        full_calendar()
+        print(calendar(remainingSubjects))
+
+    code_subj_insert = input("Digite o código da disciplina que você quer inserir: ").upper()
+    code_subj_remove = input("Digite o código da disciplina que você quer remover: ").upper()
+
+    # Get subjects from other courses
+    if AJUSTE_IS_FINISHED and not code_subj_insert.startswith('CC'):
+        subj_insert = extrasubject_from_code(code_subj_insert)
+    else:
+        subj_insert = subject_from_code(code_subj_insert)
+
+    # Get subjects from other courses
+    if AJUSTE_IS_FINISHED and not code_subj_remove.startswith('CC'):
+        subj_remove = extrasubject_from_code(code_subj_remove)
+    else:
+        subj_remove = subject_from_code(code_subj_remove)
+
     # Return if bad input
     if isinstance(subj_remove, str) or isinstance(subj_insert, str):
         print('O codigo de uma das disciplinas està errado!')
@@ -289,6 +317,11 @@ def resolve_adjustments():
             s[0].UNenroll(s[2])
             s[0].enroll(s[1])
         AJUSTE_IS_FINISHED = True
+        
+        # Reset lists
+        LIST_INSERTS = []
+        LIST_REMOVES = []
+        LIST_CHANGES = []
 
 
 
@@ -329,12 +362,27 @@ def check_priority(student, subj_insert, subj_remove):
 # Last step of REAJUSTE
 def resolve_readjustments():
     global LIST_INSERTS
+    global LIST_REMOVES
+    global LIST_CHANGES
     global REAJUSTE_IS_FINISHED
+    
     close_re_adjustment = input("Você desejar encerrar o período de reajuste? [S/N] ").upper()
     if want_finish_readjustment == 'S':
-        LIST_INSERTS = sorted(LIST_INSERTS, key=lambda x:x[0].cofficent, reverse=True)
-        for insert in LIST_INSERTS:
-            insert[0].enroll(insert[1])
+        list_requests = [(1, i) for i in LIST_INSERTS] + [(2, i) for i in LIST_REMOVES] + [(3, i) for i in LIST_CHANGES]
+
+        list_requests = sorted(list_requests, key=lambda x:x[1][0].cofficent, reverse=True)
+        for req in list_requests:
+            request = req[1]
+            # Insert
+            if req[0] == 1
+                request[0].enroll(request[1])
+            # Remove
+            elif req[0] == 2
+                request[0].UNenroll(request[1])
+            # Change
+            elif req[0] == 3
+                request[0].UNenroll(request[2])
+                request[0].enroll(request[1])
         
         REAJUSTE_IS_FINISHED = True
 
@@ -369,7 +417,7 @@ def main():
         if not new_students_check(students):
             new_students = enroll_new_students()
             students += new_students
-            #write_students_to_database(students)
+            write_students_to_database(students)
             
 
         while not MATRICULA_IS_FINISHED:
@@ -379,11 +427,11 @@ def main():
             if student:
                 # Continue and save once student has finished
                 matriculation(student)
-                #write_students_to_database(students)
+                write_students_to_database(students)
         
         if MATRICULA_IS_FINISHED:
             print("Periodo de Matricula encerrado\n\n\n")
-            
+            sleep(2)
 
     elif choice == '2' and MATRICULA_IS_FINISHED:
         # |------------------|
@@ -394,16 +442,15 @@ def main():
             student = ask_registration(students)
             print("Período de ajuste em andamento...\n\n\n")
             if student:
-                matriculation_adjust(student) # Step 2: Start reajuste
+                matriculation_adjust(student) # Step 2: Start ajuste
                 resolve_adjustments() # Step 3: Ask to close AJUSTE
                 # Save data once the AJUSTE is closed
                 if AJUSTE_IS_FINISHED:
-                    pass
-                    #write_students_to_database(students)
+                    write_students_to_database(students)
         
         if AJUSTE_IS_FINISHED:
             print("Período de ajuste em encerrado...\n\n\n")
-            
+            sleep(2)
     
 
     elif choice == '3' and MATRICULA_IS_FINISHED and AJUSTE_IS_FINISHED:
@@ -415,25 +462,24 @@ def main():
             student = ask_registration(students)
             print("Período de ajuste em andamento...\n\n\n")
             if student:
-                adjustments(student)  # Step 2: ask for subject to make the new insertion
-                resolve_adjustments() # Step 3: ask to close REAJUSTE than save
+                matriculation_adjust(student) # Step 2: Start reajuste
+                resolve_readjustments() # Step 3: ask to close REAJUSTE than save
                 if AJUSTE_IS_FINISHED:
-                    pass
-                    #write_students_to_database(students)
+                    write_students_to_database(students)
         
         if REAJUSTE_IS_FINISHED:
             print("Período de reajuste em encerrado...\n\n\n")
-
+            sleep(2)
 
     # ! Invalid option
     else:
         clear()
         print("Input invalido!")
         sleep(2)
-        return main()
 
     clear()
 
 
 
-main()
+while not MATRICULA_IS_FINISHED or not AJUSTE_IS_FINISHED or not REAJUSTE_IS_FINISHED:
+    main()
