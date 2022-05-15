@@ -74,7 +74,8 @@ class Student:
         '''
         # Check that the subject is in the list of enrolled_classes
         if subject in self.enrolled_classes:
-            self.enrolled_classes.remove(subject) 
+            self.enrolled_classes.remove(subject)
+            subject.enrolled_students -= 1
         else:
             return -1 # Student is not enrolled in this subject
 
@@ -225,3 +226,10 @@ def student_from_registration(registration, students):
         if registration == student.registration:
             return student
     return 0
+
+
+def update_subjects(students):
+    global subjects
+    for student in students:
+        for subject in student.enrolled_classes:
+            subject.enrolled_students+=1

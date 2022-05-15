@@ -14,8 +14,8 @@ COUNT_FORMANDOS = 0
 COUNT_CONTINUOS = 0
 COUNT_INDIVIDUAL = 0
 
-MATRICULA_IS_FINISHED = False
-AJUSTE_IS_FINISHED = False
+MATRICULA_IS_FINISHED = True
+AJUSTE_IS_FINISHED = True
 REAJUSTE_IS_FINISHED = False
 
 LIST_REMOVES = []
@@ -146,6 +146,7 @@ def matriculation(student):
         COUNT_FORMANDOS += 1
 
     elif student.type == 'Continuo' and COUNT_FORMANDOS == MAX_FORMANDOS and COUNT_CONTINUOS < MAX_CONTINUOS:
+        student.enrolled_classes = get_subjects_from_semester(student.semester)
         choose_subjects(student) 
         COUNT_CONTINUOS += 1
 
@@ -169,6 +170,7 @@ def matriculation(student):
 def adjustments(student, remove=False):
     global LIST_REMOVES
     global LIST_INSERTS
+    global LIST_CHANGES
     global AJUSTE_IS_FINISHED
     global remainingSubjects
     
@@ -198,11 +200,17 @@ def adjustments(student, remove=False):
         return
 
     if remove:
-        sucess = student.check_UNenroll(subj)
+        success = student.check_UNenroll(subj)
     else:
-        sucess = student.canTakeTheSubject(subj)
+        success = student.canTakeTheSubject(subj)
+        # Special case
+        if success == 2:
+            for change in LIST_CHANGES:
+                if change[2] == subj:
+                    success = 200
+                    break
 
-    if sucess == 200:
+    if success == 200:
 
         print("Seu pedido foi registrado!")
         sleep(3)
@@ -258,7 +266,7 @@ def adjustments_replace(student):
     # Checks enroll and UNenroll
     success = student.checkChange(subj_insert, subj_remove)
     # Bad input
-    if sucess != 200:
+    if success != 200:
         print("Você não pode realizar essa troca!")
         return
 
@@ -311,11 +319,15 @@ def resolve_adjustments():
             s[0].UNenroll(s[1])
 
         for s in LIST_INSERTS:
-            s[0].enroll(s[1])
+            if s[0].canTakeTheSubject(s[1]) == 200:
+                print(s[1].enrolled_students, s[1])
+                s[0].enroll(s[1])
 
         for s in LIST_CHANGES:
-            s[0].UNenroll(s[2])
-            s[0].enroll(s[1])
+            if s[0].checkChange(s[1], s[2]) == 200:
+                s[0].UNenroll(s[2])
+                s[0].enroll(s[1])
+        
         AJUSTE_IS_FINISHED = True
         
         # Reset lists
@@ -336,10 +348,10 @@ def check_priority(student, subj_insert, subj_remove):
 
     for stud_insert in LIST_INSERTS:
         if stud_insert[1] == subj_remove:
-            stud_insert[0].enroll(subj_remove)
             student.UNenroll(subj_remove)
-            students.enroll(subj_insert)
-            LIST_INSERTS.remove(subj_insert)
+            stud_insert[0].enroll(subj_remove)
+            student.enroll(subj_insert)
+            LIST_INSERTS.remove(stud_insert)
             # Priority satisfied
             return 1
 
@@ -347,8 +359,8 @@ def check_priority(student, subj_insert, subj_remove):
         if stud_remove[1] == subj_insert:
             stud_remove[0].UNenroll(subj_insert)
             student.UNenroll(subj_remove)
-            students.enroll(subj_insert)
-            LIST_REMOVES.remove(subj_remove)
+            student.enroll(subj_insert)
+            LIST_REMOVES.remove(stud_remove)
             # Priority satisfied
             return 1
     # No priority
@@ -367,22 +379,24 @@ def resolve_readjustments():
     global REAJUSTE_IS_FINISHED
     
     close_re_adjustment = input("Você desejar encerrar o período de reajuste? [S/N] ").upper()
-    if want_finish_readjustment == 'S':
+    if close_re_adjustment == 'S':
         list_requests = [(1, i) for i in LIST_INSERTS] + [(2, i) for i in LIST_REMOVES] + [(3, i) for i in LIST_CHANGES]
 
-        list_requests = sorted(list_requests, key=lambda x:x[1][0].cofficent, reverse=True)
+        list_requests = sorted(list_requests, key=lambda x:x[1][0].coefficent, reverse=True)
         for req in list_requests:
             request = req[1]
             # Insert
-            if req[0] == 1
-                request[0].enroll(request[1])
+            if req[0] == 1:
+                if request[0].canTakeTheSubject(request[1]):
+                    request[0].enroll(request[1])
             # Remove
-            elif req[0] == 2
+            elif req[0] == 2:
                 request[0].UNenroll(request[1])
             # Change
-            elif req[0] == 3
-                request[0].UNenroll(request[2])
-                request[0].enroll(request[1])
+            elif req[0] == 3:
+                if request[0].checkChange(request[1], request[2]) == 200:
+                    request[0].UNenroll(request[2])
+                    request[0].enroll(request[1])
         
         REAJUSTE_IS_FINISHED = True
 
@@ -399,6 +413,7 @@ def main():
 
     # Read database
     students = read_students()
+    update_subjects(students)
 
     main_menu()
     choice = input("Digite a opção escolhida: ")

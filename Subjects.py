@@ -1,6 +1,6 @@
 DAYS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex']
 HOURS = ['7:30', '8:20', '9:20', '10:10', '11:10', '12:00', '13:30', '14:20', '15:20', '16:10', '17:00']
-MAX_CAPACITY = 40
+MAX_CAPACITY = 1
 
 class Subject:
     def __init__(self, name, semester, code, hours, schedule, pre_requisite=None):
