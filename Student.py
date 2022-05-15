@@ -116,10 +116,13 @@ class Student:
         '''Return 0 -> Student already took the subject
            Return -1 -> Missing pre requisites
            Return 1 -> Schedule conflict
+           Return 2 -> Subject dont have capacity
         '''
-
         history = [i[0] for i in self.approved_classes] 
-        if subject.code in history:
+        if subject.enrolled_students == subject.class_capacity:
+            return 2
+        
+        elif subject.code in history:
             return 0    # Student already took the subject
         
         # check that the time of the classes aren't overlapping

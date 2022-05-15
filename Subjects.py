@@ -148,4 +148,39 @@ def full_calendar():
 
 
 
+
+def extrasubject_from_code(code):
+    global remainingSubjects
+    first = 1941
+    last = 1944
+    if len(code) == 6:
+        try:
+            c = int(code[2:])
+            # Avoid index error
+            if c >= first and c <= last:
+                return remainingSubjects[c - first]
+        except ValueError:
+            # Return the code if the user messes up
+            return code
+    return code
+
+
+remainingSubjects = []
+sub = Subject("QUIMICA TECNOLOGICA", 2, "EQ1941", 72, ['16','17','36','37'],None)
+remainingSubjects.append(sub)
+
+sub = Subject("LIBRAS", 2, "LI1942", 72, ['07','08','09','010'], None)
+remainingSubjects.append(sub)
+
+sub = Subject("METODOS NUMERICOS", 5, "EC1943", 72, ['33','34','43','44'] , None)
+remainingSubjects.append(sub)
+
+sub = Subject("FISICA 1", 2, "FI1944", 72, ['11','12','13','14'] , None)
+remainingSubjects.append(sub)
+
+calendar(remainingSubjects)
+
+
+
+
 subjects = read_subjects()
