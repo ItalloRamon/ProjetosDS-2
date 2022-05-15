@@ -7,15 +7,19 @@ MAX_FORMANDOS = 1
 MAX_CONTINUOS = 1
 MAX_INDIVIDUAL = 1
 
-LIST_INSERTS = []
-LIST_REMOVES = []
-LIST_CHANGES = []
+LIST_INSERTS = []  # (Student, subject_ins)
+LIST_REMOVES = []  # (Student, subject_rem)
+LIST_CHANGES = []  # (Student, subject_ins, subject_rem)
+
+LIST_REAJUSTMENTS = [] # Ordered list containing request of remove, insert, change
+
 
 def clear():
     if platform == 'linux' or platform == 'darwin':
         system('clear')        
     elif platform == 'win32':
         system('cls')
+
 
 def menu():
     
@@ -41,6 +45,20 @@ def menu_ajuste():
     [3] - Trocar uma disciplina   
     
     ''')
+
+
+
+
+# Ask for user registration, return student if student is found
+def ask_registration(students):
+    matricula = input("Digite o número da sua matrícula: ")
+    # Prevent ValueError converting str to int
+    if matricula.isdigit():
+        student = student_from_registration(int(matricula), students) 
+    else:
+        student = 0
+
+    return student
 
 
 # |------------------------------------| #
@@ -127,7 +145,7 @@ def adjustments_replace(student):
     subj_insert = subject_from_code(code_subj_insert)
     # Return if bad input
     if isinstance(subj_remove, str) or isinstance(subj_insert, str):
-        print('O codigo de uma das disciplinas està errado!.')
+        print('O codigo de uma das disciplinas està errado!')
         return
     
     # Subjects -> All right! 
@@ -250,13 +268,7 @@ while should_continue:
         while not matricula_is_finished:
             print("Perído da matrícula em andamento...\n\n\n")
             
-            matricula = input("Digite o número da sua matrícula: ")
-            
-            # Prevent ValueError converting str to int
-            if matricula.isdigit():
-                student = student_from_registration(int(matricula), students) 
-            else:
-                student = 0
+            student = ask_registration(students)
 
             if student:
                 
@@ -303,55 +315,47 @@ while should_continue:
     #TODO AJUSTE
     elif choice == '2':
         
-        if matricula_is_finished:
+        if matricula_is_finished and not ajuste_is_finished:
             print("Período de ajuste em andamento...\n\n\n")
             
-            #students = read_students()
-            matricula = input("Digite o número da sua matrícula: ")
+            student = ask_registration(students)
+            if student:
+                menu_ajuste()
+                choice = input("Digite e opção desejada: ")
+
+                # | Insert and removes are low priority while replacement check for a possible high | #
+                # | prority situation, if none is found it goes to low priority and is then checked | #
+                # | when adjustment period is closed                                                | #
+                if choice == '1':
+                    adjustments(student, remove=False)
+                # Remove 
+                elif choice == '2':
+                    adjustments(student, remove=True)
+                # Change
+                elif choice == '3':
+                   adjustments_replace(student) 
+                                
+                want_finish_adjustment = input("Você desejar encerrar o período de ajuste? [S/N] ").upper()
+                if want_finish_adjustment == 'S':
+                    # Priority
+                    for stud_change in LIST_CHANGES:
+                        priority = check_priority(stud_change[0], stud_change[1], stud_change[2])
+                        if priority:
+                            LIST_CHANGES.remove(stud_change)
+                    
+                    # Normal
+                    for s in LIST_REMOVES:
+                        s[0].UNenroll(s[1])
+
+                    for s in LIST_INSERTS:
+                        s[0].enroll(s[1])
+                    
+                    for s in LIST_CHANGES:
+                        s[0].UNenroll(s[2])
+                        s[0].enroll(s[1])
             
-            # Prevent ValueError converting str to int
-            if matricula.isdigit():
-                student = student_from_registration(int(matricula), students) 
             else:
-                student = 0
-            
-            if not student:
                 print("Você não está matriculado!")
-                break
-
-            menu_ajuste()
-            choice = input("Digite e opção desejada: ")
-
-            # Insert and removes are low priority while replacement check for a possible high
-            # prority situation, if none is found it goes to low priority and is then checked
-            # when adjustment period is closed
-            if choice == '1':
-                adjustments(student, remove=False)
-            # Remove 
-            elif choice == '2':
-                adjustments(student, remove=True)
-            # Change
-            elif choice == '3':
-               adjustments_replace(student) 
-                            
-            want_finish_adjustment = input("Você desejar encerrar o período de ajuste? [S/N] ").upper()
-            if want_finish_adjustment == 'S':
-                # Priority
-                for stud_change in LIST_CHANGES:
-                    priority = check_priority(stud_change[0], stud_change[1], stud_change[2])
-                    if priority:
-                        LIST_CHANGES.remove(stud_change)
-                
-                # Normal
-                for s in LIST_REMOVES:
-                    s[0].UNenroll(s[1])
-
-                for s in LIST_INSERTS:
-                    s[0].enroll(s[1])
-                
-                for s in LIST_CHANGES:
-                    s[0].UNenroll(s[2])
-                    s[0].enroll(s[1])
 
                 
         else:
@@ -362,6 +366,17 @@ while should_continue:
     elif choice == '3':
         if matricula_is_finished and ajuste_is_finished:
             print("Período de reajuste em andamento...\n\n\n")
+            
+            student = ask_registration(students)
+            if student:
+                # Ask if he whants to remove, add, change
+                # Insert in a list ordered by Student.coefficient
+                # Close reajuste and resolve requests
+                pass
+
+            else:
+                print("Você não está matriculado!")
+
         else:
             print("Período de reajuste ainda não começou.")
             sleep(3)
