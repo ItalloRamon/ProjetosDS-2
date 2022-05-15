@@ -1,0 +1,71 @@
+chocie MATRICULA ->
+	check that there arent CALOUROS in the database -> enroll CALOUROS	
+
+	get user #registration
+		* check student type and that he can make is own MATRICULA
+		* check that he hasn't already done it
+		
+		* automaticlly close MATRICULA period when all students are enrolled
+		* save everityng
+--------------------
+- Functions needed -
+--------------------
+chekc_calouros()
+	if not CALOUROS in the database -> enroll CALOUROS
+
+
+check_MATRICULA(student)
+	check Student.type and flags to be satisfied in order to get into matriculation
+	procede with student enrollment
+	student closed enrollment
+________________________________________________________________________________________
+________________________________________________________________________________________
+
+choice AJUSTE ->
+	get user #registration
+		* Ask which action the user whants to do (insert, remove, change)
+		* procede with student requests and save them in the proper lists
+
+		* close the AJUSTE period and make priority checks to resolve requests
+		* save everityng
+--------------------
+- Functions needed -
+--------------------
+Insert_remove_change(student)
+	ask_for an action to be taken
+	returns the student request with a code (1 -> insert; 2 -> remove; 3 -> change)
+
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+note: After using the above function based on the code returned save the request in the
+      adequate list
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+
+resolve_priorityes()
+	loops trough all change requests to check if there is a corresponding insert or
+	remove, if a high priority situation is found the requests get resolved and deleted
+	from the list
+__________________________________________________________________________________________
+__________________________________________________________________________________________
+
+choice REAJUSTE ->
+	get user #registration
+		* Ask which action the user whants to do (insert, remove, change)
+		* procede with student requests and save them in a ordered list by 
+		  Student.coefficient
+
+		* close the REAJUSTE period and resolve requests
+		* save everityng
+--------------------
+- Functions needed -
+--------------------
+Insert_remove_change(student) same from the above cell ^
+
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+note: After using the above function save the returned result in a ordered list based on
+      the student coefficient, you'll need to make a simple function to insert in order 
+      use the built-in sort function with the right key 
+      (e.g. returned_value[1][0].coefficient)
+      note of note: returned_value[0] is the type of action to be taken (reference above)
+--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--**--
+
+
