@@ -14,7 +14,7 @@ class Student:
         self.type = _type
         self.approved_classes = approved # list({'subject': grade}
         self.enrolled_classes = enrolled # list of Subject
-        self.coefficent = sum([float(i[1]) for i in self.approved_classes]) / len(self.approved_classes) if len(self.approved_classes) else None
+        self.coefficent = sum([float(i[1]) for i in self.approved_classes]) / len(self.approved_classes) if len(self.approved_classes) else 0
 
     def __str__(self):
         # return 'Name: %s\nSemester: %s\nCoeff: %s'%(self.name, self.semester, round(self.coefficent, 1))
@@ -119,11 +119,8 @@ class Student:
            Return 1 -> Schedule conflict
            Return 2 -> Subject dont have capacity
         '''
-        history = [i[0] for i in self.approved_classes] 
-        if subject.enrolled_students == subject.class_capacity:
-            return 2
-        
-        elif subject.code in history:
+        history = [i[0] for i in self.approved_classes]         
+        if subject.code in history:
             return 0    # Student already took the subject
         
         # check that the time of the classes aren't overlapping
@@ -135,6 +132,9 @@ class Student:
                 if not pre in history:
                     return -1    # Missing prerequisite
         
+        if subject.enrolled_students == subject.class_capacity:
+            return 2
+
         return 200    # ok
 
 
